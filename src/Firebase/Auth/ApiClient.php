@@ -168,6 +168,20 @@ class ApiClient implements ClientInterface
     }
 
     /**
+     * @throws ExpiredOobCode
+     * @throws InvalidOobCode
+     * @throws OperationNotAllowed
+     * @throws UserDisabled
+     */
+    public function confirmEmailVerification(string $uid, string $oobCode): ResponseInterface
+    {
+        return $this->requestApi('https://identitytoolkit.googleapis.com/v1/accounts:update', [
+            'oobCode' => $oobCode,
+            'localId' => $uid,
+        ]);
+    }
+
+    /**
      * @throws AuthException
      * @throws FirebaseException
      */

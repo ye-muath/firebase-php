@@ -651,6 +651,38 @@ class Auth
     }
 
     /**
+     * Confirm email verification.
+     *
+     * @param Uid|Email|string $uidOrEmail the user whose tokens are to be revoked
+     *
+     * @throws UserNotFound
+     * @throws UserDisabled
+     * @throws ExpiredOobCode
+     * @throws InvalidOobCode
+     * @throws OperationNotAllowed
+     * @throws Exception\AuthException
+     * @throws Exception\FirebaseException
+     */
+    public function confirmEmailVerification($uidOrEmail, string $oobCode): void
+    {
+        if (\is_string($uidOrEmail)) {
+            try {
+                $uidOrEmail = new Email($uidOrEmail);
+            } catch (\InvalidArgumentException $e) {
+                $uidOrEmail = new Uid((string) $uidOrEmail);
+            }
+        }
+
+        if ($uidOrEmail instanceof Email) {
+            $uid = $this->getUserByEmail($uidOrEmail)->uid;
+        } else {
+            $uid = $uidOrEmail;
+        }
+
+        $this->client->confirmEmailVerification((string) $uid, $oobCode);
+    }
+
+    /**
      * Revokes all refresh tokens for the specified user identified by the uid provided.
      * In addition to revoking all refresh tokens for a user, all ID tokens issued
      * before revocation will also be revoked on the Auth backend. Any request with an

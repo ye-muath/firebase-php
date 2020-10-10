@@ -449,6 +449,27 @@ class AuthTest extends IntegrationTestCase
         $this->auth->verifyPasswordResetCode('invalid');
     }
 
+    public function testConfirmEmailVerification(): void
+    {
+        $user = $this->auth->createUser([
+            'unverified_email' => \uniqid('user', false).'@domain.tld',
+        ]);
+
+        try {
+            $url = $this->auth->getEmailVerificationLink($user->email);
+            // Extract OOB code
+            \parse_str(\parse_url($url, \PHP_URL_QUERY), $queryParams);
+            $oobCode = $queryParams['oobCode'];
+
+            $this->auth->confirmEmailVerification($user->email, $oobCode);
+
+            $check = $this->auth->getUserByEmail($user->email);
+            $this->assertTrue($check->emailVerified);
+        } finally {
+            $this->auth->deleteUser($user->uid);
+        }
+    }
+
     public function testSignInAsUser(): void
     {
         $user = $this->auth->createAnonymousUser();
